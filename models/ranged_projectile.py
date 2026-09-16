@@ -12,7 +12,9 @@ class RangedProjectile(pygame.sprite.Sprite):
         self.pos_x = float(pos[0])
         self.pos_y = float(pos[1])
         self.damage = damage
-        self.speed = speed
+        # 다른 이동 속도 값들과 마찬가지로 UI_SCALE만큼 곱해서, 창 크기가
+        # 커져도 체감 속도가 비슷하게 유지되도록 합니다.
+        self.speed = speed * config.UI_SCALE
 
         dx = target_pos[0] - pos[0]
         dy = target_pos[1] - pos[1]

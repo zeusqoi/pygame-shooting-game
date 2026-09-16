@@ -3,6 +3,7 @@ import pygame_gui
 import config
 from core.globals import theme_path, db, current_user
 from core.scene_manager import Scene
+from utils.layout import scaled_rect
 
 class RankingScene(Scene):
     def __init__(self, back_scene_class=None):
@@ -11,58 +12,58 @@ class RankingScene(Scene):
         self.ui_manager = pygame_gui.UIManager((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), theme_path)
         
         self.title_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((40, 30), (600, 100)),
+            relative_rect=scaled_rect(40, 30, 600, 100),
             text="HALL OF FAME",
             manager=self.ui_manager,
             object_id="#menu_title"
         )
         
         self.btn_all = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((560, 40), (80, 40)),
+            relative_rect=scaled_rect(560, 40, 80, 40),
             text="ALL",
             manager=self.ui_manager,
             object_id="@tab_active"
         )
         self.btn_1p = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((650, 40), (80, 40)),
+            relative_rect=scaled_rect(650, 40, 80, 40),
             text="1P",
             manager=self.ui_manager,
             object_id="@tab_inactive"
         )
         self.btn_2p = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((740, 40), (80, 40)),
+            relative_rect=scaled_rect(740, 40, 80, 40),
             text="2P",
             manager=self.ui_manager,
             object_id="@tab_inactive"
         )
         
         self.btn_back = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((1100, 40), (140, 40)),
+            relative_rect=scaled_rect(1100, 40, 140, 40),
             text="BACK",
             manager=self.ui_manager,
             object_id="@tab_inactive"
         )
         
         self.my_rank_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((40, 100), (1200, 40)),
+            relative_rect=scaled_rect(40, 100, 1200, 40),
             text="",
             manager=self.ui_manager,
             object_id="#ranking_header_text"
         )
         
         self.header_panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect((40, 150), (1200, 50)),
+            relative_rect=scaled_rect(40, 150, 1200, 50),
             manager=self.ui_manager,
             starting_height=1,
             object_id="@rank_normal_panel"
         )
-        pygame_gui.elements.UILabel(pygame.Rect((20, 0), (100, 50)), "RANK", self.ui_manager, container=self.header_panel, object_id="#ranking_header_text")
-        pygame_gui.elements.UILabel(pygame.Rect((200, 0), (300, 50)), "OPERATIVE", self.ui_manager, container=self.header_panel, object_id="#ranking_header_text")
-        pygame_gui.elements.UILabel(pygame.Rect((700, 0), (200, 50)), "MODE", self.ui_manager, container=self.header_panel, object_id="#ranking_header_text")
-        pygame_gui.elements.UILabel(pygame.Rect((950, 0), (200, 50)), "SCORE", self.ui_manager, container=self.header_panel, object_id="#ranking_header_text")
+        pygame_gui.elements.UILabel(scaled_rect(20, 0, 100, 50), "RANK", self.ui_manager, container=self.header_panel, object_id="#ranking_header_text")
+        pygame_gui.elements.UILabel(scaled_rect(200, 0, 300, 50), "OPERATIVE", self.ui_manager, container=self.header_panel, object_id="#ranking_header_text")
+        pygame_gui.elements.UILabel(scaled_rect(700, 0, 200, 50), "MODE", self.ui_manager, container=self.header_panel, object_id="#ranking_header_text")
+        pygame_gui.elements.UILabel(scaled_rect(950, 0, 200, 50), "SCORE", self.ui_manager, container=self.header_panel, object_id="#ranking_header_text")
 
         self.scroll_container = pygame_gui.elements.UIScrollingContainer(
-            relative_rect=pygame.Rect((40, 210), (1200, 550)),
+            relative_rect=scaled_rect(40, 210, 1200, 550),
             manager=self.ui_manager
         )
         
@@ -106,21 +107,21 @@ class RankingScene(Scene):
                 text_id = "#rank_bronze_text"
                 
             panel = pygame_gui.elements.UIPanel(
-                relative_rect=pygame.Rect((0, y_offset), (1170, panel_height)),
+                relative_rect=scaled_rect(0, y_offset, 1170, panel_height),
                 manager=self.ui_manager,
                 container=self.scroll_container,
                 object_id=panel_id
             )
             self.panels.append(panel)
             
-            pygame_gui.elements.UILabel(pygame.Rect((20, 0), (100, panel_height)), str(rank), self.ui_manager, container=panel, object_id=text_id)
-            pygame_gui.elements.UILabel(pygame.Rect((200, 0), (300, panel_height)), player_name, self.ui_manager, container=panel, object_id=text_id)
+            pygame_gui.elements.UILabel(scaled_rect(20, 0, 100, panel_height), str(rank), self.ui_manager, container=panel, object_id=text_id)
+            pygame_gui.elements.UILabel(scaled_rect(200, 0, 300, panel_height), player_name, self.ui_manager, container=panel, object_id=text_id)
             
             mode_badge = "#badge_1p" if game_mode == "Single" else "#badge_2p"
             mode_display = "1P" if game_mode == "Single" else "2P"
-            pygame_gui.elements.UILabel(pygame.Rect((760, 15), (80, 30)), mode_display, self.ui_manager, container=panel, object_id=mode_badge)
+            pygame_gui.elements.UILabel(scaled_rect(760, 15, 80, 30), mode_display, self.ui_manager, container=panel, object_id=mode_badge)
             
-            pygame_gui.elements.UILabel(pygame.Rect((950, 0), (200, panel_height)), f"{score:,}", self.ui_manager, container=panel, object_id=text_id)
+            pygame_gui.elements.UILabel(scaled_rect(950, 0, 200, panel_height), f"{score:,}", self.ui_manager, container=panel, object_id=text_id)
             
             y_offset += panel_height + spacing
             

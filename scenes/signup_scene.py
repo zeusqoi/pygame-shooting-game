@@ -4,6 +4,7 @@ import config
 from core.globals import theme_path, db, main_bg_img
 from core.scene_manager import Scene
 from utils.ui_utils import draw_bg_aspect_ratio
+from utils.layout import scaled_rect
 
 class SignupSubScene(Scene):
     def __init__(self):
@@ -11,7 +12,7 @@ class SignupSubScene(Scene):
         self.ui_manager = pygame_gui.UIManager((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), theme_path)
 
         # 1. 중앙 패널 (로그인 화면과 통일감 있는 컴팩트한 사이즈)
-        panel_rect = pygame.Rect((340, 100), (600, 620))
+        panel_rect = scaled_rect(340, 100, 600, 620)
         self.panel = pygame_gui.elements.UIPanel(
             relative_rect=panel_rect,
             manager=self.ui_manager,
@@ -20,7 +21,7 @@ class SignupSubScene(Scene):
 
         # 2. 타이틀 (디자인 아이디 적용)
         self.title_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((0, 40), (600, 60)),
+            relative_rect=scaled_rect(0, 40, 600, 60),
             text="JOIN FORCES",
             manager=self.ui_manager,
             container=self.panel,
@@ -29,11 +30,11 @@ class SignupSubScene(Scene):
 
         # --- ID 영역 (Placeholder 적용) ---
         pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((50, 120), (300, 30)),
+            relative_rect=scaled_rect(50, 120, 300, 30),
             text="ID *", manager=self.ui_manager, container=self.panel, object_id="@login_label"
         )
         self.id_entry = pygame_gui.elements.UITextEntryLine(
-            relative_rect=pygame.Rect((50, 150), (380, 60)),
+            relative_rect=scaled_rect(50, 150, 380, 60),
             manager=self.ui_manager, 
             container=self.panel, 
             object_id="@login_input",
@@ -41,17 +42,17 @@ class SignupSubScene(Scene):
         )
 
         self.btn_check_id = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((440, 150), (110, 60)),
+            relative_rect=scaled_rect(440, 150, 110, 60),
             text="CHECK", manager=self.ui_manager, container=self.panel, object_id="@login_check_btn"
         )
 
         # --- 비밀번호 영역 (Placeholder 적용) ---
         pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((50, 240), (240, 30)),
+            relative_rect=scaled_rect(50, 240, 240, 30),
             text="PASSWORD *", manager=self.ui_manager, container=self.panel, object_id="@login_label"
         )
         self.pw_entry = pygame_gui.elements.UITextEntryLine(
-            relative_rect=pygame.Rect((50, 270), (240, 60)),
+            relative_rect=scaled_rect(50, 270, 240, 60),
             manager=self.ui_manager, 
             container=self.panel, 
             object_id="@login_input",
@@ -60,11 +61,11 @@ class SignupSubScene(Scene):
         self.pw_entry.set_text_hidden(True) 
 
         pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((310, 240), (240, 30)),
+            relative_rect=scaled_rect(310, 240, 240, 30),
             text="CONFIRM PASSWORD *", manager=self.ui_manager, container=self.panel, object_id="@login_label"
         )
         self.pw_confirm_entry = pygame_gui.elements.UITextEntryLine(
-            relative_rect=pygame.Rect((310, 270), (240, 60)),
+            relative_rect=scaled_rect(310, 270, 240, 60),
             manager=self.ui_manager, 
             container=self.panel, 
             object_id="@login_input",
@@ -74,11 +75,11 @@ class SignupSubScene(Scene):
 
         # --- 닉네임/이메일 영역 (Placeholder 적용) ---
         pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((50, 360), (240, 30)),
+            relative_rect=scaled_rect(50, 360, 240, 30),
             text="NICKNAME *", manager=self.ui_manager, container=self.panel, object_id="@login_label"
         )
         self.nickname_entry = pygame_gui.elements.UITextEntryLine(
-            relative_rect=pygame.Rect((50, 390), (240, 60)),
+            relative_rect=scaled_rect(50, 390, 240, 60),
             manager=self.ui_manager, 
             container=self.panel, 
             object_id="@login_input",
@@ -86,11 +87,11 @@ class SignupSubScene(Scene):
         )
 
         pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((310, 360), (240, 30)),
+            relative_rect=scaled_rect(310, 360, 240, 30),
             text="EMAIL (OPTIONAL)", manager=self.ui_manager, container=self.panel, object_id="@login_label"
         )
         self.email_entry = pygame_gui.elements.UITextEntryLine(
-            relative_rect=pygame.Rect((310, 390), (240, 60)),
+            relative_rect=scaled_rect(310, 390, 240, 60),
             manager=self.ui_manager, 
             container=self.panel, 
             object_id="@login_input",
@@ -99,18 +100,18 @@ class SignupSubScene(Scene):
 
         # --- 하단 버튼부 ---
         self.btn_cancel = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((50, 500), (150, 60)),
+            relative_rect=scaled_rect(50, 500, 150, 60),
             text="CANCEL", manager=self.ui_manager, container=self.panel, object_id="@login_cancel_btn"
         )
 
         self.btn_submit = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((210, 500), (340, 60)),
+            relative_rect=scaled_rect(210, 500, 340, 60),
             text="COMPLETE SIGNUP", manager=self.ui_manager, container=self.panel, object_id="@login_submit_btn"
         )
 
         # 메시지 라벨
         self.msg_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((0, 570), (600, 30)),
+            relative_rect=scaled_rect(0, 570, 600, 30),
             text="", manager=self.ui_manager, container=self.panel, object_id="@login_msg"
         )
 

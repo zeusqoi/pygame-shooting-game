@@ -67,7 +67,24 @@ class Zombie(pygame.sprite.Sprite):
         }
         s = stats.get(zombie_type, stats["soldier"])
 
-        self.frames = get_zombie_frames(zombie_type, s["size"])
+        # 창 크기(UI_SCALE)에 맞춰 다른 스프라이트들처럼 좀비 크기도 같이
+        # 커지거나 작아지도록 기본 크기에 UI_SCALE을 곱합니다.
+        base_w = round(s["size"][0] * config.UI_SCALE)
+        base_h = round(s["size"][1] * config.UI_SCALE)
+
+        # 보스(boss1/boss2)를 제외한 "잡졸" 좀비들은 크기에 무작위 변화를 줘서
+        # 화면이 좀 더 다채롭게 보이도록 합니다. 단, 두 가지 규칙을 지킵니다:
+        # 1) 지금까지의 고정 크기가 "가장 작은" 크기가 되도록 배율은 항상 1.0 이상만 적용
+        # 2) 아무리 커져도 보스 좀비보다는 확실히 작아야 함(최대 배율 1.6배로 제한 —
+        #    가장 큰 잡졸(mutant, 105px)이 168px까지 커져도 보스(250px)보다 훨씬 작음)
+        if zombie_type in ("boss1", "boss2"):
+            size_scale = 1.0
+        else:
+            size_scale = random.uniform(1.0, 1.6)
+
+        size = (round(base_w * size_scale), round(base_h * size_scale))
+
+        self.frames = get_zombie_frames(zombie_type, size)
         self.current_frame = 0
         self.anim_timer = 0.0
         self.anim_interval = 0.3
@@ -76,7 +93,7 @@ class Zombie(pygame.sprite.Sprite):
         self.image = self.frames[self.current_frame]
         self.rect = self.image.get_rect()
 
-        spawn_margin = max(s["size"]) // 2 + 20
+        spawn_margin = max(size) // 2 + 20
 
         side = random.choice(["top", "bottom", "left", "right"])
         if side == "top":
@@ -91,7 +108,9 @@ class Zombie(pygame.sprite.Sprite):
         self.pos_x = float(self.rect.x)
         self.pos_y = float(self.rect.y)
 
-        self.speed = s["speed"] + (0.04 * max(stage - 1, 0))
+        # 이동 속도/사거리도 화면 위 실제 거리이므로 UI_SCALE을 곱해, 창 크기가
+        # 커져도 플레이어와 마찬가지로 체감 속도가 비슷하게 유지되도록 합니다.
+        self.speed = (s["speed"] + (0.04 * max(stage - 1, 0))) * config.UI_SCALE
         self.max_hp = s["hp"] * stage
         self.hp = self.max_hp
         self.damage = s["damage"]
@@ -99,12 +118,16 @@ class Zombie(pygame.sprite.Sprite):
         self.is_ranged = (zombie_type == "ranged")
         self.ranged_cooldown = 3.0
         self.last_ranged_attack = 0
-        self.ranged_range = 250
+        self.ranged_range = 250 * config.UI_SCALE
 
         self.is_boss = zombie_type in ["boss1", "boss2"]
 
         self.last_idle_sound = time.time()
         self.idle_sound_interval = random.uniform(3.0, 6.0)
+
+        # 화면 밖에서 갑자기 "뿅" 하고 나타나지 않도록, 스폰 직후 잠깐 커지며 나타나는 연출
+        self.spawn_timer = 0.0
+        self.spawn_duration = 0.0 if self.is_boss else 0.25
 
     @property
     def hitbox(self):
@@ -122,11 +145,14 @@ class Zombie(pygame.sprite.Sprite):
                 self.is_enraged = True
                 self.speed *= 1.5
                 self.anim_interval = 0.15
+                # 분노 프레임도 화면 크기에 맞춰 스케일된 보스 크기와 동일하게
+                # 맞춰서, 분노 상태로 바뀔 때 크기가 갑자기 달라지지 않게 합니다.
+                _rage_size = (round(250 * config.UI_SCALE), round(250 * config.UI_SCALE))
                 if self.zombie_type == "boss1":
-                    self.frames = get_zombie_frames("boss1_rage", (250, 250))
+                    self.frames = get_zombie_frames("boss1_rage", _rage_size)
                     self.current_frame = 0
                 elif self.zombie_type == "boss2":  # ✅ 추가
-                    self.frames = get_zombie_frames("boss2_rage", (250, 250))
+                    self.frames = get_zombie_frames("boss2_rage", _rage_size)
                     self.current_frame = 0
 
         closest_p = None
@@ -181,7 +207,20 @@ class Zombie(pygame.sprite.Sprite):
 
         img = self.frames[self.current_frame]
         if self.facing_left:
-            self.image = pygame.transform.flip(img, True, False)
+            img = pygame.transform.flip(img, True, False)
+
+        if self.spawn_timer < self.spawn_duration:
+            self.spawn_timer += time_delta
+            progress = min(self.spawn_timer / self.spawn_duration, 1.0)
+            scale = 0.3 + 0.7 * progress
+            alpha = int(255 * progress)
+            w, h = img.get_size()
+            new_size = (max(1, round(w * scale)), max(1, round(h * scale)))
+            old_center = self.rect.center
+            img = pygame.transform.smoothscale(img, new_size).copy()
+            img.set_alpha(alpha)
+            self.image = img
+            self.rect = self.image.get_rect(center=old_center)
         else:
             self.image = img
 

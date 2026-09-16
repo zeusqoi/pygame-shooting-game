@@ -2,28 +2,28 @@
   "defaults": {
     "font": {
       "name": "pixel",
-      "size": "24",
+      "size": "19",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     }
   },
   "drop_down_menu": {
     "font": {
       "name": "gothic",
-      "size": "20",
+      "size": "16",
       "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     }
   },
   "drop_down_menu.#drop_down_options_list": {
     "font": {
       "name": "gothic",
-      "size": "20",
+      "size": "16",
       "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     }
   },
   "#title_text": {
     "font": {
       "name": "pixel",
-      "size": "160",
+      "size": "128",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -38,7 +38,7 @@
   "#subtitle_text": {
     "font": {
       "name": "gothic",
-      "size": "40",
+      "size": "32",
       "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     },
     "colours": {
@@ -58,7 +58,7 @@
   "@green_btn": {
     "font": {
       "name": "pixel",
-      "size": "40",
+      "size": "32",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -72,7 +72,7 @@
   "@dark_btn": {
     "font": {
       "name": "pixel",
-      "size": "30",
+      "size": "24",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -97,7 +97,7 @@
   "@login_title": {
     "font": {
       "name": "pixel",
-      "size": "45",
+      "size": "36",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -107,7 +107,7 @@
   "@input_label": {
     "font": {
       "name": "pixel",
-      "size": "20",
+      "size": "16",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -117,7 +117,7 @@
   "@login_label": {
     "font": {
       "name": "pixel",
-      "size": "18",
+      "size": "14",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -127,7 +127,7 @@
   "@login_input": {
     "font": {
       "name": "pixel",
-      "size": "20",
+      "size": "16",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -145,7 +145,7 @@
   "@login_check_btn": {
     "font": {
       "name": "pixel",
-      "size": "20",
+      "size": "16",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -163,7 +163,7 @@
   "@login_cancel_btn": {
     "font": {
       "name": "pixel",
-      "size": "22",
+      "size": "18",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -181,7 +181,7 @@
   "@login_submit_btn": {
     "font": {
       "name": "pixel",
-      "size": "28",
+      "size": "22",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -199,7 +199,7 @@
   "@login_back_btn": {
     "font": {
       "name": "pixel",
-      "size": "28",
+      "size": "22",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -217,7 +217,7 @@
   "@login_msg": {
     "font": {
       "name": "pixel",
-      "size": "18",
+      "size": "14",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -227,7 +227,7 @@
   "#menu_title": {
     "font": {
       "name": "pixel",
-      "size": "70",
+      "size": "56",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -271,36 +271,98 @@
   },
   "@rank_normal_panel": {
     "colours": {
-      "dark_bg": "#111111",
-      "normal_bg": "#111111",
-      "normal_border": "#333333",
-      "hovered_bg": "#1a1a1a",
-      "hovered_border": "#555555"
+      "dark_bg": "#161616",
+      "normal_bg": "#161616",
+      "normal_border": "#4a4a4a",
+      "hovered_bg": "#1e1e1e",
+      "hovered_border": "#6e6e6e"
     },
     "misc": {
-      "border_width": "1"
+      "border_width": "2",
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "8"
     }
   },
   "#char_desc_text": {
     "font": {
       "name": "gothic",
-      "size": "22",
+      "size": "18",
       "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     },
     "colours": {
-      "dark_bg": "#111111",
-      "normal_bg": "#111111",
-      "normal_border": "#333333",
+      "dark_bg": "#33280f",
+      "normal_bg": "#33280f",
+      "normal_border": "#ffe066",
       "normal_text": "#ffffff"
     },
     "misc": {
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "12",
+      "border_width": "5",
+      "shadow_width": "6",
+      "padding": "12,10",
+      "line_spacing": "1.15"
+    }
+  },
+  "#char_desc_text.vertical_scroll_bar": {
+    "colours": {
+      "dark_bg": "#241b09",
+      "normal_border": "#ffe066"
+    },
+    "misc": {
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "8",
+      "border_width": "2"
+    }
+  },
+  "#char_desc_text.vertical_scroll_bar.#sliding_button": {
+    "colours": {
+      "normal_bg": "#ffd23c",
+      "hovered_bg": "#ffe066",
+      "active_bg": "#e0aa00",
+      "normal_border": "#33280f",
+      "hovered_border": "#33280f"
+    },
+    "misc": {
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "8",
+      "border_width": "0"
+    }
+  },
+  "#char_desc_text.vertical_scroll_bar.#top_button": {
+    "colours": {
+      "normal_bg": "#33280f",
+      "hovered_bg": "#4a3a15",
+      "active_bg": "#ffd23c",
+      "normal_text": "#ffd23c",
+      "hovered_text": "#ffe066",
+      "normal_border": "#ffd23c"
+    },
+    "misc": {
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "6",
+      "border_width": "1"
+    }
+  },
+  "#char_desc_text.vertical_scroll_bar.#bottom_button": {
+    "colours": {
+      "normal_bg": "#33280f",
+      "hovered_bg": "#4a3a15",
+      "active_bg": "#ffd23c",
+      "normal_text": "#ffd23c",
+      "hovered_text": "#ffe066",
+      "normal_border": "#ffd23c"
+    },
+    "misc": {
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "6",
       "border_width": "1"
     }
   },
   "#rank_gold_text": {
     "font": {
       "name": "gothic",
-      "size": "30",
+      "size": "24",
       "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     },
     "colours": {
@@ -310,7 +372,7 @@
   "#rank_silver_text": {
     "font": {
       "name": "gothic",
-      "size": "30",
+      "size": "24",
       "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     },
     "colours": {
@@ -320,7 +382,7 @@
   "#rank_bronze_text": {
     "font": {
       "name": "gothic",
-      "size": "30",
+      "size": "24",
       "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     },
     "colours": {
@@ -330,7 +392,7 @@
   "#rank_normal_text": {
     "font": {
       "name": "gothic",
-      "size": "30",
+      "size": "24",
       "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     },
     "colours": {
@@ -340,7 +402,7 @@
   "#ranking_header_text": {
     "font": {
       "name": "gothic",
-      "size": "24",
+      "size": "19",
       "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     },
     "colours": {
@@ -350,7 +412,7 @@
   "@tab_active": {
     "font": {
       "name": "pixel",
-      "size": "24",
+      "size": "19",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -367,7 +429,7 @@
   "@tab_inactive": {
     "font": {
       "name": "pixel",
-      "size": "24",
+      "size": "19",
       "regular_path": "assets/fonts/PixelifySans.ttf"
     },
     "colours": {
@@ -384,13 +446,35 @@
   "#badge_1p": {
     "font": {
       "name": "gothic",
-      "size": "16",
-      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+      "size": "15",
+      "style": "bold",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf",
+      "bold_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     },
     "colours": {
-      "normal_text": "#82d300",
-      "normal_bg": "#000000",
+      "normal_text": "#000000",
+      "dark_bg": "#82d300",
+      "normal_bg": "#82d300",
       "normal_border": "#82d300"
+    },
+    "misc": {
+      "border_width": "1",
+      "text_horiz_alignment": "center"
+    }
+  },
+  "#passive_tag_text": {
+    "font": {
+      "name": "gothic",
+      "size": "15",
+      "style": "bold",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf",
+      "bold_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    },
+    "colours": {
+      "normal_text": "#1c1a10",
+      "dark_bg": "#ffd23c",
+      "normal_bg": "#ffd23c",
+      "normal_border": "#ffd23c"
     },
     "misc": {
       "border_width": "1",
@@ -400,12 +484,15 @@
   "#badge_2p": {
     "font": {
       "name": "gothic",
-      "size": "16",
-      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+      "size": "15",
+      "style": "bold",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf",
+      "bold_path": "assets/fonts/AppleSDGothicNeoR.ttf"
     },
     "colours": {
-      "normal_text": "#00bfff",
-      "normal_bg": "#000000",
+      "normal_text": "#000000",
+      "dark_bg": "#00bfff",
+      "normal_bg": "#00bfff",
       "normal_border": "#00bfff"
     },
     "misc": {
@@ -415,12 +502,14 @@
   },
   "@selected_slot": {
     "colours": {
-      "dark_bg": "#1A1A1A",
-      "normal_bg": "#1A1A1A",
+      "dark_bg": "#1f2b0a",
+      "normal_bg": "#1f2b0a",
       "normal_border": "#9ae600"
     },
     "misc": {
-      "border_width": "4"
+      "border_width": "4",
+      "shape": "rounded_rectangle",
+      "shape_corner_radius": "8"
     }
   }
 }

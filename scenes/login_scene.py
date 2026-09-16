@@ -6,6 +6,7 @@ import core.globals as globals
 from core.scene_manager import Scene
 from utils.ui_utils import draw_bg_aspect_ratio
 from utils.sound_manager import play_sound
+from utils.layout import scaled_rect
 
 
 class LoginSubScene(Scene):
@@ -16,7 +17,7 @@ class LoginSubScene(Scene):
             theme_path
         )
 
-        panel_rect = pygame.Rect((390, 75), (500, 650))
+        panel_rect = scaled_rect(390, 75, 500, 650)
         self.panel = pygame_gui.elements.UIPanel(
             relative_rect=panel_rect,
             manager=self.ui_manager,
@@ -24,7 +25,7 @@ class LoginSubScene(Scene):
         )
 
         self.title_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((44, 40), (412, 60)),
+            relative_rect=scaled_rect(44, 40, 412, 60),
             text="Login",
             manager=self.ui_manager,
             container=self.panel,
@@ -32,7 +33,7 @@ class LoginSubScene(Scene):
         )
 
         self.id_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((44, 150), (412, 30)),
+            relative_rect=scaled_rect(44, 150, 412, 30),
             text="ID",
             manager=self.ui_manager,
             container=self.panel,
@@ -40,7 +41,7 @@ class LoginSubScene(Scene):
         )
 
         self.id_entry = pygame_gui.elements.UITextEntryLine(
-            relative_rect=pygame.Rect((44, 180), (412, 60)),
+            relative_rect=scaled_rect(44, 180, 412, 60),
             manager=self.ui_manager,
             container=self.panel,
             placeholder_text="ENTER YOUR ID",
@@ -48,7 +49,7 @@ class LoginSubScene(Scene):
         )
 
         self.pw_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((44, 280), (412, 30)),
+            relative_rect=scaled_rect(44, 280, 412, 30),
             text="PASSWORD",
             manager=self.ui_manager,
             container=self.panel,
@@ -56,7 +57,7 @@ class LoginSubScene(Scene):
         )
 
         self.pw_entry = pygame_gui.elements.UITextEntryLine(
-            relative_rect=pygame.Rect((44, 310), (412, 60)),
+            relative_rect=scaled_rect(44, 310, 412, 60),
             manager=self.ui_manager,
             container=self.panel,
             placeholder_text="ENTER PASSWORD",
@@ -65,7 +66,7 @@ class LoginSubScene(Scene):
         self.pw_entry.set_text_hidden(True)
 
         self.btn_submit = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((44, 440), (412, 60)),
+            relative_rect=scaled_rect(44, 440, 412, 60),
             text="Login",
             manager=self.ui_manager,
             container=self.panel,
@@ -73,7 +74,7 @@ class LoginSubScene(Scene):
         )
 
         self.btn_back = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((44, 530), (412, 60)),
+            relative_rect=scaled_rect(44, 530, 412, 60),
             text="Back to Menu",
             manager=self.ui_manager,
             container=self.panel,
@@ -81,7 +82,7 @@ class LoginSubScene(Scene):
         )
 
         self.msg_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((44, 580), (412, 30)),
+            relative_rect=scaled_rect(44, 580, 412, 30),
             text="",
             manager=self.ui_manager,
             container=self.panel,

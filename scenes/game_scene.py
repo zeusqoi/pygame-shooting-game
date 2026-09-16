@@ -18,6 +18,7 @@ from models.ranged_projectile import RangedProjectile
 from models.effects import AttackEffect, HitEffect
 from models.item import Item
 from utils.sound_manager import play_sound, stop_channel, play_music
+from utils.layout import scaled_rect, scaled_pos, scaled_size
 
 # 스테이지별 설정
 STAGE_CONFIG = {
@@ -110,12 +111,19 @@ class GameScene(Scene):
         self.shake_timer = 0.0
         self.shake_intensity = 0
 
+        # ===================== 2인 협동: 연계 기술 상태 =====================
+        self.combo_cooldown = 15.0
+        self.last_combo_time = -999.0
+        self.combo_message_timer = 0.0
+
         self.warning_img = None
         warning_path = "assets/images/warning.png"
         if os.path.exists(warning_path):
             try:
                 self.warning_img = pygame.image.load(warning_path).convert_alpha()
-                self.warning_img = pygame.transform.scale(self.warning_img, (520, 300))
+                self.warning_img = pygame.transform.scale(
+                    self.warning_img, (scaled_size(520), scaled_size(300))
+                )
             except Exception as e:
                 print("WARNING 이미지 로드 실패:", e)
 
@@ -131,14 +139,16 @@ class GameScene(Scene):
         from core.globals import theme_path
         self.ui_manager = pygame_gui.UIManager((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), theme_path)
         self.btn_pause = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((config.SCREEN_WIDTH - 110, 10), (100, 40)),
+            relative_rect=scaled_rect(config.DESIGN_WIDTH - 110, 10, 100, 40),
             text="PAUSE",
             manager=self.ui_manager,
             object_id="@dark_btn"
         )
 
         self.btn_exit = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((config.SCREEN_WIDTH // 2 - 100, config.SCREEN_HEIGHT // 2 + 50), (200, 50)),
+            relative_rect=scaled_rect(
+                config.DESIGN_WIDTH // 2 - 100, config.DESIGN_HEIGHT // 2 + 50, 200, 50
+            ),
             text="EXIT TO MAIN",
             manager=self.ui_manager,
             object_id="@dark_btn"
@@ -546,6 +556,9 @@ class GameScene(Scene):
 
             if p.wants_to_attack and now - p.last_attack_time > atk_cd:
                 p.wants_to_attack = False
+                p.register_attack()
+                # 캐릭터별 패시브(콤보 대미지 / 조준 강화 등)를 반영한 배율입니다.
+                dmg_mult = p.get_damage_multiplier()
 
                 if p.attack_type in ["melee", "melee_knockback"]:
                     self.effects.add(AttackEffect(p.rect.center, p.attack_radius))
@@ -559,7 +572,7 @@ class GameScene(Scene):
 
                         # 좀비의 hitbox 절반 크기만큼 공격 범위를 넓혀서 쉽게 맞도록 함
                         if dist <= p.attack_radius + (z.hitbox.width / 2):
-                            z.hp -= p.attack_damage
+                            z.hp -= p.attack_damage * dmg_mult
                             self._play_zombie_hit_sound()
                             self.effects.add(HitEffect(z.rect.center))
 
@@ -587,7 +600,7 @@ class GameScene(Scene):
                         proj = Projectile(
                             p.rect.center,
                             nearest_z.rect.center,
-                            damage=p.attack_damage,
+                            damage=p.attack_damage * dmg_mult,
                             speed=10
                         )
                         self.all_sprites.add(proj)
@@ -597,6 +610,11 @@ class GameScene(Scene):
 
             elif p.wants_to_attack:
                 p.wants_to_attack = False
+
+        # ===================== 2인 협동: 연계 기술 =====================
+        # 두 캐릭터가 서로 가까이 붙어서 "동시에" 각자의 메인 스킬을 사용하면,
+        # 두 스킬 지속시간이 겹치는 동안 합동 공격이 발동합니다.
+        self._update_combo_attack(now)
 
         for proj in list(self.projectiles):
             hits = pygame.sprite.spritecollide(
@@ -618,11 +636,11 @@ class GameScene(Scene):
 
         for proj in list(self.enemy_projectiles):
             for p in list(self.players):
-                if p.invincible:
+                if p.is_invincible:
                     continue
 
                 if proj.rect.colliderect(p.hitbox):
-                    p.hp -= proj.damage
+                    p.hp -= proj.damage * p.get_incoming_damage_multiplier()
                     play_sound("좀비한테 맞았을 때 효과음.wav", volume=0.55)
                     self.effects.add(HitEffect(p.rect.center))
                     proj.kill()
@@ -642,7 +660,7 @@ class GameScene(Scene):
                 play_sound("아이템 먹는 효과음.mp3", volume=0.5)
 
         for p in list(self.players):
-            if p.invincible:
+            if p.is_invincible:
                 continue
 
             hits = pygame.sprite.spritecollide(
@@ -650,7 +668,7 @@ class GameScene(Scene):
                 collided=lambda s1, s2: s1.hitbox.colliderect(s2.damage_hitbox)
             )
             if hits:
-                p.hp -= config.ZOMBIE_DAMAGE
+                p.hp -= config.ZOMBIE_DAMAGE * p.get_incoming_damage_multiplier()
                 play_sound("좀비한테 맞았을 때 효과음.wav", volume=0.55)
                 self.effects.add(HitEffect(p.rect.center))
 
@@ -697,6 +715,56 @@ class GameScene(Scene):
                 self.shake_timer = 0.3  # 0.3초 흔들림
                 self.shake_intensity = 6
                 break
+
+    def _update_combo_attack(self, now):
+        """2인 협동 연계 기술: 두 캐릭터가 서로 가까이 붙어서 두 스킬의
+        지속시간이 겹치는 순간(=거의 동시에 스킬을 사용한 순간) 화면에 있는
+        좀비들에게 큰 범위 피해를 주는 합동 공격이 발동합니다."""
+        if self.combo_message_timer > 0:
+            self.combo_message_timer = max(0.0, self.combo_message_timer - (1 / max(config.FPS, 1)))
+
+        if self.num_players != 2 or len(self.players) != 2:
+            return
+
+        p1, p2 = self.players[0], self.players[1]
+        if p1.hp <= 0 or p2.hp <= 0:
+            return
+
+        if not (p1.skill_active and p2.skill_active):
+            return
+
+        if now - self.last_combo_time <= self.combo_cooldown:
+            return
+
+        dist = math.hypot(p1.rect.centerx - p2.rect.centerx, p1.rect.centery - p2.rect.centery)
+        combo_radius = scaled_size(220)
+        if dist > combo_radius:
+            return
+
+        self.last_combo_time = now
+        self.combo_message_timer = 1.2
+
+        mid_x = (p1.rect.centerx + p2.rect.centerx) // 2
+        mid_y = (p1.rect.centery + p2.rect.centery) // 2
+        blast_radius = scaled_size(300)
+
+        combo_damage = (
+            p1.attack_damage * p1.get_damage_multiplier()
+            + p2.attack_damage * p2.get_damage_multiplier()
+        ) * 2.5
+
+        self.effects.add(AttackEffect((mid_x, mid_y), blast_radius))
+        self.shake_timer = 0.35
+        self.shake_intensity = 8
+
+        for z in list(self.zombies):
+            dist_to_blast = math.hypot(mid_x - z.rect.centerx, mid_y - z.rect.centery)
+            if dist_to_blast <= blast_radius + (z.hitbox.width / 2):
+                z.hp -= combo_damage
+                self._play_zombie_hit_sound()
+                self.effects.add(HitEffect(z.rect.center))
+                if z.hp <= 0:
+                    self._on_zombie_kill(z)
 
     def draw(self, screen):
         # 1. 흔들림 오프셋
@@ -749,6 +817,14 @@ class GameScene(Scene):
                 pygame.draw.rect(screen, (255, 0, 0), (0, 0, config.SCREEN_WIDTH, config.SCREEN_HEIGHT), 8)
                 break
 
+        # 4-1. 연계 기술 발동 문구
+        if self.combo_message_timer > 0:
+            combo_txt = config.kfont_medium.render("연계 공격 발동!", True, (255, 210, 60))
+            screen.blit(
+                combo_txt,
+                (config.SCREEN_WIDTH // 2 - combo_txt.get_width() // 2, scaled_size(120))
+            )
+
         # 5. 일시정지 오버레이
         if self.paused:
             overlay = pygame.Surface((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), pygame.SRCALPHA)
@@ -764,45 +840,74 @@ class GameScene(Scene):
             hp_ratio = p1.hp / p1.max_hp
             hp_index = max(0, min(6, round(hp_ratio * 6)))
             if hp_index in hp_bar_imgs:
-                hp_img = pygame.transform.scale(hp_bar_imgs[hp_index], (400, 60))
-                screen.blit(hp_img, (15, 15))
+                hp_img = pygame.transform.scale(hp_bar_imgs[hp_index], (scaled_size(400), scaled_size(60)))
+                screen.blit(hp_img, scaled_pos(15, 15))
             p1_hp_txt = config.small_font.render(f"1P HP: {p1.hp}", True, config.WHITE)
-            screen.blit(p1_hp_txt, (425, 25))
+            screen.blit(p1_hp_txt, scaled_pos(425, 25))
 
         cfg = self._stage_cfg()
         stage_label = {1: "ST1", 2: "ST2", 3: "ST4", 4: "ST5"}
         goal_text = "BOSS" if cfg["boss_stage"] else f"Kill: {self.stage_kills}/{cfg['kill_goal']}"
         info_str = f"{stage_label.get(self.stage, 'ST?')} | {goal_text}"
         info_txt = config.small_font.render(info_str, True, config.WHITE)
-        screen.blit(info_txt, (425, 55))
+        screen.blit(info_txt, scaled_pos(425, 55))
 
         if self.num_players == 2 and len(self.players) > 1:
             p2 = self.players[1]
             hp_ratio_2 = p2.hp / p2.max_hp
             idx_2 = max(0, min(6, round(hp_ratio_2 * 6)))
             if idx_2 in hp_bar_imgs:
-                hp_img_2 = pygame.transform.scale(hp_bar_imgs[idx_2], (400, 60))
-                screen.blit(hp_img_2, (15, 90))
+                hp_img_2 = pygame.transform.scale(hp_bar_imgs[idx_2], (scaled_size(400), scaled_size(60)))
+                screen.blit(hp_img_2, scaled_pos(15, 90))
             p2_txt = config.small_font.render(f"2P HP: {p2.hp}", True, config.WHITE)
-            screen.blit(p2_txt, (425, 105))
+            screen.blit(p2_txt, scaled_pos(425, 105))
 
+        # 이 문구는 픽셀 폰트(영문 전용)로 렌더링되므로 한글 없이 영문으로 씁니다.
         ctrl_msg = (
-            "1P: WASD + SPACE + F | 2P: Arrows + Left Click"
+            "1P: WASD+SPACE+F+LShift(Dash) | 2P: Arrows+Click+RShift+RCtrl(Dash)"
             if self.num_players == 2
-            else "Move: WASD | Attack: SPACE | Skill: F"
+            else "Move: WASD | Attack: SPACE | Skill: F | Dash: LShift"
         )
+        # 화면 맨 아래에 뜨는 두 가지 텍스트(조작 안내 문구, 스킬 아이콘 아래 "P1 (F)"
+        # 캡션)가 서로 다른 높이에 떠 있으면 지저분해 보이므로, 화면 하단에서 같은
+        # 여백(bottom_margin)만큼 띄운 "같은 줄"에 나란히 정렬되도록 맞춥니다.
+        bottom_margin = scaled_size(20)
+
         ctrl = config.small_font.render(ctrl_msg, True, config.WHITE)
-        screen.blit(ctrl, (15, config.SCREEN_HEIGHT - 35))
+        screen.blit(ctrl, (scaled_size(15), config.SCREEN_HEIGHT - bottom_margin - ctrl.get_height()))
 
         # 7. 스킬 쿨타임 UI
+        # 아이콘 안에는 "스킬" 라벨(위쪽 절반)과 READY/쿨타임 숫자(아래쪽 절반)를
+        # 나눠서 배치합니다. 이전에는 두 텍스트를 아이콘 중앙 기준으로 -10/+10px씩
+        # 고정 픽셀만큼만 띄웠는데, 화면이 커지면 폰트도 커지는데 이 간격은 그대로라
+        # 큰 화면에서는 두 글자가 서로 겹쳐 보이는 문제가 있었습니다. 아래에서는
+        # 아이콘 크기에 비례한 위치(zone)를 써서, 화면 크기와 상관없이 항상
+        # 겹치지 않게 배치합니다.
+        icon_size = scaled_size(76)
+        caption_gap = scaled_size(6)
+
         for i, p in enumerate(self.players):
-            icon_size = 60
-            x_pos = config.SCREEN_WIDTH - 80 - (i * 90)
-            icon_rect = pygame.Rect(x_pos, config.SCREEN_HEIGHT - 85, icon_size, icon_size)
+            x_pos = config.SCREEN_WIDTH - scaled_size(90) - (i * scaled_size(100))
+
+            p_label = f"P{i+1}"
+            k_label = "F" if i == 0 else "Shift"
+            p_info_txt = config.small_font.render(f"{p_label} ({k_label})", True, config.WHITE)
+
+            # 캡션 텍스트 아랫줄과 조작 안내 문구 아랫줄이 같은 높이가 되도록,
+            # 캡션의 위치를 아래에서부터 거꾸로 계산합니다.
+            caption_bottom = config.SCREEN_HEIGHT - bottom_margin
+            caption_top = caption_bottom - p_info_txt.get_height()
+            icon_bottom = caption_top - caption_gap
+            icon_rect = pygame.Rect(x_pos, icon_bottom - icon_size, icon_size, icon_size)
+
             pygame.draw.rect(screen, (50, 50, 50), icon_rect)
             pygame.draw.rect(screen, config.WHITE, icon_rect, 2)
+
             skill_txt = config.kfont_small.render("스킬", True, config.WHITE)
-            screen.blit(skill_txt, (icon_rect.centerx - skill_txt.get_width() // 2, icon_rect.centery - skill_txt.get_height() // 2 - 10))
+            label_zone_center_y = icon_rect.top + icon_size * 0.28
+            screen.blit(skill_txt, (icon_rect.centerx - skill_txt.get_width() // 2, label_zone_center_y - skill_txt.get_height() // 2))
+
+            status_zone_center_y = icon_rect.top + icon_size * 0.72
 
             now = time.time()
             elapsed = now - p.last_skill_time
@@ -825,15 +930,12 @@ class GameScene(Scene):
                 screen.blit(shadow, icon_rect.topleft)
                 remain = p.skill_cooldown - elapsed
                 cd_txt = config.small_font.render(f"{remain:.1f}", True, config.YELLOW)
-                screen.blit(cd_txt, (icon_rect.centerx - cd_txt.get_width() // 2, icon_rect.centery - cd_txt.get_height() // 2 + 10))
+                screen.blit(cd_txt, (icon_rect.centerx - cd_txt.get_width() // 2, status_zone_center_y - cd_txt.get_height() // 2))
             else:
                 ready_txt = config.small_font.render("READY", True, config.GREEN)
-                screen.blit(ready_txt, (icon_rect.centerx - ready_txt.get_width() // 2, icon_rect.centery - ready_txt.get_height() // 2 + 10))
+                screen.blit(ready_txt, (icon_rect.centerx - ready_txt.get_width() // 2, status_zone_center_y - ready_txt.get_height() // 2))
 
-            p_label = f"P{i+1}"
-            k_label = "F" if i == 0 else "Shift"
-            p_info_txt = config.small_font.render(f"{p_label} ({k_label})", True, config.WHITE)
-            screen.blit(p_info_txt, (icon_rect.centerx - p_info_txt.get_width() // 2, icon_rect.bottom + 5))
+            screen.blit(p_info_txt, (icon_rect.centerx - p_info_txt.get_width() // 2, caption_top))
 
         # 8. 스테이지 인트로
         if self.showing_stage_intro:
@@ -852,9 +954,9 @@ class GameScene(Scene):
             if self.warning_img:
                 warning_rect = self.warning_img.get_rect(center=(config.SCREEN_WIDTH // 2, config.SCREEN_HEIGHT // 2))
                 screen.blit(self.warning_img, warning_rect)
-            big_font = config.get_font(42)
+            big_font = config.get_font(scaled_size(42))
             txt = big_font.render("FINAL BOSS WARNING", True, (255, 255, 255))
-            txt_rect = txt.get_rect(center=(config.SCREEN_WIDTH // 2, config.SCREEN_HEIGHT // 2 + 190))
+            txt_rect = txt.get_rect(center=(config.SCREEN_WIDTH // 2, config.SCREEN_HEIGHT // 2 + scaled_size(190)))
             screen.blit(txt, txt_rect)
 
         # 10. UI Manager

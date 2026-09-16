@@ -5,6 +5,7 @@ from core.globals import theme_path, current_user, main_bg_img
 from core.scene_manager import Scene
 from utils.ui_utils import draw_bg_aspect_ratio
 from utils.sound_manager import play_music, set_bgm_volume, set_sfx_volume, get_bgm_volume, get_sfx_volume
+from utils.layout import scaled_rect
 
 
 class SettingsPopup:
@@ -14,13 +15,13 @@ class SettingsPopup:
         self.manager = manager
 
         self.panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect((390, 260), (500, 300)),
+            relative_rect=scaled_rect(390, 260, 500, 300),
             manager=manager,
             object_id="#login_popup"
         )
 
         self.title = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((0, 10), (500, 40)),
+            relative_rect=scaled_rect(0, 10, 500, 40),
             text="SETTINGS",
             manager=manager,
             container=self.panel,
@@ -28,14 +29,14 @@ class SettingsPopup:
         )
 
         self.bgm_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((30, 70), (200, 30)),
+            relative_rect=scaled_rect(30, 70, 200, 30),
             text="BGM Volume",
             manager=manager,
             container=self.panel,
             object_id="#popup_text"
         )
         self.bgm_slider = pygame_gui.elements.UIHorizontalSlider(
-            relative_rect=pygame.Rect((30, 105), (440, 30)),
+            relative_rect=scaled_rect(30, 105, 440, 30),
             start_value=get_bgm_volume() * 100,
             value_range=(0, 100),
             manager=manager,
@@ -43,14 +44,14 @@ class SettingsPopup:
         )
 
         self.sfx_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((30, 150), (200, 30)),
+            relative_rect=scaled_rect(30, 150, 200, 30),
             text="SFX Volume",
             manager=manager,
             container=self.panel,
             object_id="#popup_text"
         )
         self.sfx_slider = pygame_gui.elements.UIHorizontalSlider(
-            relative_rect=pygame.Rect((30, 185), (440, 30)),
+            relative_rect=scaled_rect(30, 185, 440, 30),
             start_value=get_sfx_volume() * 100,
             value_range=(0, 100),
             manager=manager,
@@ -58,7 +59,7 @@ class SettingsPopup:
         )
 
         self.btn_close = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((175, 235), (150, 40)),
+            relative_rect=scaled_rect(175, 235, 150, 40),
             text="CLOSE",
             manager=manager,
             container=self.panel,
@@ -80,13 +81,13 @@ class LoginWarningPopup:
         self.manager = manager
 
         self.panel = pygame_gui.elements.UIPanel(
-            relative_rect=pygame.Rect((390, 300), (500, 220)),
+            relative_rect=scaled_rect(390, 300, 500, 220),
             manager=manager,
             object_id="#login_popup"
         )
 
         self.title = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((0, 10), (500, 40)),
+            relative_rect=scaled_rect(0, 10, 500, 40),
             text="WARNING",
             manager=manager,
             container=self.panel,
@@ -94,7 +95,7 @@ class LoginWarningPopup:
         )
 
         self.text = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((20, 70), (460, 60)),
+            relative_rect=scaled_rect(20, 70, 460, 60),
             text="Your score will not be saved",
             manager=manager,
             container=self.panel,
@@ -102,7 +103,7 @@ class LoginWarningPopup:
         )
 
         self.sub_text = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((20, 105), (460, 40)),
+            relative_rect=scaled_rect(20, 105, 460, 40),
             text="if you play as Guest.",
             manager=manager,
             container=self.panel,
@@ -110,7 +111,7 @@ class LoginWarningPopup:
         )
 
         self.btn_cancel = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((60, 155), (150, 40)),
+            relative_rect=scaled_rect(60, 155, 150, 40),
             text="CANCEL",
             manager=manager,
             container=self.panel,
@@ -118,7 +119,7 @@ class LoginWarningPopup:
         )
 
         self.btn_ok = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((290, 155), (150, 40)),
+            relative_rect=scaled_rect(290, 155, 150, 40),
             text="OK",
             manager=manager,
             container=self.panel,
@@ -135,7 +136,7 @@ class TitleScene(Scene):
         self.ui_manager = pygame_gui.UIManager((config.SCREEN_WIDTH, config.SCREEN_HEIGHT), theme_path)
 
         self.title_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((40, 60), (1200, 250)),
+            relative_rect=scaled_rect(40, 60, 1200, 250),
             text="TRAIN TO MAGOK",
             manager=self.ui_manager,
             object_id="#title_text"
@@ -143,7 +144,7 @@ class TitleScene(Scene):
         import core.globals as globals
         if globals.current_user != "Guest":
             self.subtitle_label = pygame_gui.elements.UILabel(
-                relative_rect=pygame.Rect((440, 300), (400, 60)),
+                relative_rect=scaled_rect(440, 300, 400, 60),
                 text=globals.current_user,
                 manager=self.ui_manager,
                 object_id="#subtitle_text"
@@ -152,31 +153,31 @@ class TitleScene(Scene):
             self.subtitle_label = None
 
         self.btn_start = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((390, 420), (500, 70)),
+            relative_rect=scaled_rect(390, 420, 500, 70),
             text="GAME START",
             manager=self.ui_manager,
             object_id="@green_btn"
         )
         self.btn_login = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((390, 510), (240, 50)),
+            relative_rect=scaled_rect(390, 510, 240, 50),
             text="LOGIN",
             manager=self.ui_manager,
             object_id="@dark_btn"
         )
         self.btn_signup = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((650, 510), (240, 50)),
+            relative_rect=scaled_rect(650, 510, 240, 50),
             text="SIGN UP",
             manager=self.ui_manager,
             object_id="@dark_btn"
         )
         self.btn_ranking = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((390, 580), (500, 50)),
+            relative_rect=scaled_rect(390, 580, 500, 50),
             text="RANKING",
             manager=self.ui_manager,
             object_id="@dark_btn"
         )
         self.btn_settings = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((390, 640), (500, 50)),
+            relative_rect=scaled_rect(390, 640, 500, 50),
             text="SETTINGS",
             manager=self.ui_manager,
             object_id="@dark_btn"

@@ -39,7 +39,11 @@ class Projectile(pygame.sprite.Sprite):
         self.pos_x = float(pos[0])
         self.pos_y = float(pos[1])
         self.damage = damage
-        self.speed = speed
+        # 창 크기(UI_SCALE)에 따라 화면 자체의 실제 픽셀 크기가 달라지는데,
+        # 투사체 속도는 그동안 고정 픽셀 값이라 큰 화면에서는 상대적으로
+        # 느리게 느껴졌습니다. 다른 이동 관련 수치들과 마찬가지로 UI_SCALE을
+        # 곱해서 화면 크기와 상관없이 체감 속도가 비슷하게 맞춥니다.
+        self.speed = speed * config.UI_SCALE
         
         dx = target_pos[0] - pos[0]
         dy = target_pos[1] - pos[1]
