@@ -1,0 +1,4 @@
+pygame-ce
+pymysql
+pygame_gui
+opencv-python

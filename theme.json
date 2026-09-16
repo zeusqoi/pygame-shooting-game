@@ -1,0 +1,426 @@
+{
+  "defaults": {
+    "font": {
+      "name": "pixel",
+      "size": "24",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    }
+  },
+  "drop_down_menu": {
+    "font": {
+      "name": "gothic",
+      "size": "20",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    }
+  },
+  "drop_down_menu.#drop_down_options_list": {
+    "font": {
+      "name": "gothic",
+      "size": "20",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    }
+  },
+  "#title_text": {
+    "font": {
+      "name": "pixel",
+      "size": "160",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_text": "#82d300",
+      "text_shadow": "#000000"
+    },
+    "misc": {
+      "text_shadow_size": "4",
+      "text_shadow_offset": "4,4"
+    }
+  },
+  "#subtitle_text": {
+    "font": {
+      "name": "gothic",
+      "size": "40",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    },
+    "colours": {
+      "normal_text": "#bbbbbb"
+    }
+  },
+  "@transparent_btn": {
+    "colours": {
+      "normal_bg": "#00000000",
+      "hovered_bg": "#00000000",
+      "active_bg": "#00000000",
+      "normal_border": "#00000000",
+      "hovered_border": "#00000000",
+      "active_border": "#00000000"
+    }
+  },
+  "@green_btn": {
+    "font": {
+      "name": "pixel",
+      "size": "40",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_bg": "#82d300",
+      "hovered_bg": "#9bef00",
+      "active_bg": "#6eb200",
+      "normal_text": "#000000",
+      "hovered_text": "#000000"
+    }
+  },
+  "@dark_btn": {
+    "font": {
+      "name": "pixel",
+      "size": "30",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_bg": "#222222",
+      "hovered_bg": "#444444",
+      "active_bg": "#111111",
+      "normal_text": "#ffffff",
+      "hovered_text": "#ffffff"
+    }
+  },
+  "@login_panel": {
+    "colours": {
+      "dark_bg": "#18181b",
+      "normal_border": "#3f3f47"
+    },
+    "misc": {
+      "shape": "rectangle",
+      "border_width": "4",
+      "shadow_width": "8"
+    }
+  },
+  "@login_title": {
+    "font": {
+      "name": "pixel",
+      "size": "45",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_text": "#9ae600"
+    }
+  },
+  "@input_label": {
+    "font": {
+      "name": "pixel",
+      "size": "20",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_text": "#9ae600"
+    }
+  },
+  "@login_label": {
+    "font": {
+      "name": "pixel",
+      "size": "18",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_text": "#9ae600"
+    }
+  },
+  "@login_input": {
+    "font": {
+      "name": "pixel",
+      "size": "20",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_bg": "#000000",
+      "normal_text": "#ffffff",
+      "normal_border": "#4d5949",
+      "active_bg": "#111111",
+      "active_text": "#ffffff",
+      "active_border": "#9ae600"
+    },
+    "misc": {
+      "border_width": "4"
+    }
+  },
+  "@login_check_btn": {
+    "font": {
+      "name": "pixel",
+      "size": "20",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_bg": "#5a5f5f",
+      "hovered_bg": "#777777",
+      "active_bg": "#333333",
+      "normal_text": "#ffffff",
+      "hovered_text": "#ffffff",
+      "normal_border": "#3f3f47"
+    },
+    "misc": {
+      "border_width": "3"
+    }
+  },
+  "@login_cancel_btn": {
+    "font": {
+      "name": "pixel",
+      "size": "22",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_bg": "#5a5f5f",
+      "hovered_bg": "#777777",
+      "active_bg": "#333333",
+      "normal_text": "#ffffff",
+      "hovered_text": "#ffffff",
+      "normal_border": "#3f3f47"
+    },
+    "misc": {
+      "border_width": "3"
+    }
+  },
+  "@login_submit_btn": {
+    "font": {
+      "name": "pixel",
+      "size": "28",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_bg": "#9ae600",
+      "hovered_bg": "#aaff00",
+      "active_bg": "#7cb800",
+      "normal_text": "#000000",
+      "hovered_text": "#000000",
+      "normal_border": "#497d00"
+    },
+    "misc": {
+      "border_width": "4"
+    }
+  },
+  "@login_back_btn": {
+    "font": {
+      "name": "pixel",
+      "size": "28",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_bg": "#18181b",
+      "hovered_bg": "#27272a",
+      "active_bg": "#000000",
+      "normal_text": "#ffffff",
+      "hovered_text": "#ffffff",
+      "normal_border": "#00000000"
+    },
+    "misc": {
+      "border_width": "0"
+    }
+  },
+  "@login_msg": {
+    "font": {
+      "name": "pixel",
+      "size": "18",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_text": "#ffffff"
+    }
+  },
+  "#menu_title": {
+    "font": {
+      "name": "pixel",
+      "size": "70",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_text": "#ffffff",
+      "text_shadow": "#000000"
+    },
+    "misc": {
+      "text_shadow_size": "4",
+      "text_shadow_offset": "3,3"
+    }
+  },
+  "@rank_gold_panel": {
+    "colours": {
+      "dark_bg": "#1A1A1A",
+      "normal_bg": "#1A1A1A",
+      "normal_border": "#FFD700"
+    },
+    "misc": {
+      "border_width": "2"
+    }
+  },
+  "@rank_silver_panel": {
+    "colours": {
+      "dark_bg": "#1A1A1A",
+      "normal_bg": "#1A1A1A",
+      "normal_border": "#C0C0C0"
+    },
+    "misc": {
+      "border_width": "2"
+    }
+  },
+  "@rank_bronze_panel": {
+    "colours": {
+      "dark_bg": "#1A1A1A",
+      "normal_bg": "#1A1A1A",
+      "normal_border": "#CD7F32"
+    },
+    "misc": {
+      "border_width": "2"
+    }
+  },
+  "@rank_normal_panel": {
+    "colours": {
+      "dark_bg": "#111111",
+      "normal_bg": "#111111",
+      "normal_border": "#333333",
+      "hovered_bg": "#1a1a1a",
+      "hovered_border": "#555555"
+    },
+    "misc": {
+      "border_width": "1"
+    }
+  },
+  "#char_desc_text": {
+    "font": {
+      "name": "gothic",
+      "size": "22",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    },
+    "colours": {
+      "dark_bg": "#111111",
+      "normal_bg": "#111111",
+      "normal_border": "#333333",
+      "normal_text": "#ffffff"
+    },
+    "misc": {
+      "border_width": "1"
+    }
+  },
+  "#rank_gold_text": {
+    "font": {
+      "name": "gothic",
+      "size": "30",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    },
+    "colours": {
+      "normal_text": "#FFD700"
+    }
+  },
+  "#rank_silver_text": {
+    "font": {
+      "name": "gothic",
+      "size": "30",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    },
+    "colours": {
+      "normal_text": "#C0C0C0"
+    }
+  },
+  "#rank_bronze_text": {
+    "font": {
+      "name": "gothic",
+      "size": "30",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    },
+    "colours": {
+      "normal_text": "#CD7F32"
+    }
+  },
+  "#rank_normal_text": {
+    "font": {
+      "name": "gothic",
+      "size": "30",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    },
+    "colours": {
+      "normal_text": "#FFFFFF"
+    }
+  },
+  "#ranking_header_text": {
+    "font": {
+      "name": "gothic",
+      "size": "24",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    },
+    "colours": {
+      "normal_text": "#888888"
+    }
+  },
+  "@tab_active": {
+    "font": {
+      "name": "pixel",
+      "size": "24",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_bg": "#82d300",
+      "hovered_bg": "#82d300",
+      "active_bg": "#82d300",
+      "normal_text": "#000000",
+      "normal_border": "#82d300"
+    },
+    "misc": {
+      "border_width": "2"
+    }
+  },
+  "@tab_inactive": {
+    "font": {
+      "name": "pixel",
+      "size": "24",
+      "regular_path": "assets/fonts/PixelifySans.ttf"
+    },
+    "colours": {
+      "normal_bg": "#111111",
+      "hovered_bg": "#333333",
+      "active_bg": "#82d300",
+      "normal_text": "#888888",
+      "normal_border": "#555555"
+    },
+    "misc": {
+      "border_width": "2"
+    }
+  },
+  "#badge_1p": {
+    "font": {
+      "name": "gothic",
+      "size": "16",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    },
+    "colours": {
+      "normal_text": "#82d300",
+      "normal_bg": "#000000",
+      "normal_border": "#82d300"
+    },
+    "misc": {
+      "border_width": "1",
+      "text_horiz_alignment": "center"
+    }
+  },
+  "#badge_2p": {
+    "font": {
+      "name": "gothic",
+      "size": "16",
+      "regular_path": "assets/fonts/AppleSDGothicNeoR.ttf"
+    },
+    "colours": {
+      "normal_text": "#00bfff",
+      "normal_bg": "#000000",
+      "normal_border": "#00bfff"
+    },
+    "misc": {
+      "border_width": "1",
+      "text_horiz_alignment": "center"
+    }
+  },
+  "@selected_slot": {
+    "colours": {
+      "dark_bg": "#1A1A1A",
+      "normal_bg": "#1A1A1A",
+      "normal_border": "#9ae600"
+    },
+    "misc": {
+      "border_width": "4"
+    }
+  }
+}

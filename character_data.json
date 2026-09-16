@@ -1,0 +1,40 @@
+{
+  "characters": {
+    "choi": {
+      "name": "Woosik",
+      "hp": 200,
+      "speed": 3,
+      "attack_type": "melee",
+      "attack_radius": 120,
+      "attack_damage": 12,
+      "attack_cooldown": 1.0,
+      "skill_type": "homerun",
+      "skill_duration": 1.0,
+      "skill_cooldown": 8.0
+    },
+    "ma": {
+      "name": "Dongseok",
+      "hp": 400,
+      "speed": 2,
+      "attack_type": "melee_knockback",
+      "attack_radius": 100,
+      "attack_damage": 20,
+      "attack_cooldown": 1.0,
+      "skill_type": "invincible_knockback",
+      "skill_duration": 5.0,
+      "skill_cooldown": 12.0
+    },
+    "gong": {
+      "name": "Gongyu",
+      "hp": 300,
+      "speed": 3,
+      "attack_type": "projectile",
+      "attack_radius": 300,
+      "attack_damage": 7,
+      "attack_cooldown": 0.5,
+      "skill_type": "buff_x2",
+      "skill_duration": 4.0,
+      "skill_cooldown": 10.0
+    }
+  }
+}
