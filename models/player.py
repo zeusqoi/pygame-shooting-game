@@ -8,8 +8,11 @@ from utils.sound_manager import play_sound
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, char_id, is_p2=False):
+    def __init__(self, char_id, is_p2=False, obstacles=None):
         super().__init__()
+        # 장애물이 있는 넓은 맵에서 벽에 막혀 미끄러지듯 이동하기 위한 참조.
+        # None이면(예: 기존 테스트 코드) 장애물 충돌 없이 기존처럼 동작합니다.
+        self.obstacles = obstacles
         self.char_data = CHAR_DATA.get(char_id, CHAR_DATA.get("choi", list(CHAR_DATA.values())[0]))
         self.char_id = str(char_id).lower()
 
@@ -43,9 +46,12 @@ class Player(pygame.sprite.Sprite):
 
         self.image = self.img_default
         self.rect = self.image.get_rect()
+        # 좌표는 화면이 아니라 "월드" 기준입니다(맵이 화면보다 넓어짐에 따라).
+        # 스폰 위치는 월드 한가운데로 고정하고, utils/level_layout.py의
+        # 장애물 배치도 이 지점 주변을 항상 비워두도록 맞춰져 있습니다.
         self.rect.center = (
-            config.SCREEN_WIDTH // 2 + (30 if is_p2 else -30),
-            config.SCREEN_HEIGHT // 2
+            config.WORLD_WIDTH // 2 + (30 if is_p2 else -30),
+            config.WORLD_HEIGHT // 2
         )
 
         # 애니메이션 처리는 항상 이 "논리적 중심 좌표"를 기준으로 합니다.
@@ -124,6 +130,14 @@ class Player(pygame.sprite.Sprite):
         self.dash_dir = (0, 0)
         self.dash_invincible = False
 
+        # ===================== 아이템 버프 상태 =====================
+        # 아이템마다 효과가 달라서(회복/이동속도/무적) 회복은 즉시 적용하고,
+        # 나머지 둘은 만료 시각(time.time() 기준)을 저장해뒀다가 update()에서
+        # 매 프레임 "지금 활성 상태인지"만 확인하는 방식으로 처리합니다.
+        self.item_speed_until = 0.0
+        self.item_speed_mult = 1.0
+        self.item_shield_until = 0.0
+
     @property
     def hitbox(self):
         # 원래 130px 스프라이트 기준으로 -120px만큼 인셋(히트박스가 이미지보다
@@ -136,9 +150,18 @@ class Player(pygame.sprite.Sprite):
 
     @property
     def is_invincible(self):
-        """스킬로 인한 무적(예: 마동석 스킬)과 대시로 인한 짧은 무적을
-        하나로 합쳐서 확인할 수 있게 해줍니다."""
-        return self.invincible or self.dash_invincible
+        """스킬로 인한 무적(예: 마동석 스킬)과 대시로 인한 짧은 무적,
+        그리고 무적 실드 아이템으로 인한 무적을 하나로 합쳐서 확인합니다."""
+        return self.invincible or self.dash_invincible or time.time() < self.item_shield_until
+
+    def apply_speed_item(self, duration, mult):
+        """이동속도 아이템을 먹었을 때 game_scene.py에서 호출합니다."""
+        self.item_speed_until = time.time() + duration
+        self.item_speed_mult = mult
+
+    def apply_shield_item(self, duration):
+        """무적 실드 아이템을 먹었을 때 game_scene.py에서 호출합니다."""
+        self.item_shield_until = time.time() + duration
 
     def register_attack(self):
         """실제로 공격이 나간 시점에 game_scene에서 호출합니다.
@@ -176,6 +199,29 @@ class Player(pygame.sprite.Sprite):
             return 1.0 - reduction
         return 1.0
 
+    def _try_move_axis(self, dx, dy):
+        """장애물이 있으면 그 축의 이동만 취소해서, 벽에 부딪힌 방향으로만
+        막히고 나머지 방향으로는 계속 미끄러지듯 이동하게 합니다(예: 벽에
+        대각선으로 부딪히면 벽을 따라 옆으로는 계속 이동 가능)."""
+        if not self.obstacles:
+            self.center_x += dx
+            self.center_y += dy
+            return
+
+        if dx != 0:
+            new_cx = self.center_x + dx
+            test_rect = pygame.Rect(0, 0, self.rect.width, self.rect.height)
+            test_rect.center = (round(new_cx), round(self.center_y))
+            if not any(test_rect.colliderect(o.hitbox) for o in self.obstacles):
+                self.center_x = new_cx
+
+        if dy != 0:
+            new_cy = self.center_y + dy
+            test_rect = pygame.Rect(0, 0, self.rect.width, self.rect.height)
+            test_rect.center = (round(self.center_x), round(new_cy))
+            if not any(test_rect.colliderect(o.hitbox) for o in self.obstacles):
+                self.center_y = new_cy
+
     def update(self, time_delta):
         keys = pygame.key.get_pressed()
         speed = self.base_speed
@@ -183,16 +229,21 @@ class Player(pygame.sprite.Sprite):
         if self.skill_type == "buff_x2" and self.skill_active:
             speed = self.base_speed * 2
 
+        # 이동속도 아이템 효과(스킬 버프와 별개로 곱해져서 같이 켜져 있으면
+        # 함께 적용됩니다)
+        if time.time() < self.item_speed_until:
+            speed *= self.item_speed_mult
+
         dx, dy = 0, 0
 
         if not self.is_p2:
             if keys[pygame.K_a] and self.rect.left > 0:
                 dx -= speed
-            if keys[pygame.K_d] and self.rect.right < config.SCREEN_WIDTH:
+            if keys[pygame.K_d] and self.rect.right < config.WORLD_WIDTH:
                 dx += speed
             if keys[pygame.K_w] and self.rect.top > 0:
                 dy -= speed
-            if keys[pygame.K_s] and self.rect.bottom < config.SCREEN_HEIGHT:
+            if keys[pygame.K_s] and self.rect.bottom < config.WORLD_HEIGHT:
                 dy += speed
 
             if keys[pygame.K_f] and time.time() - self.last_skill_time > self.skill_cooldown:
@@ -205,11 +256,11 @@ class Player(pygame.sprite.Sprite):
         else:
             if keys[pygame.K_LEFT] and self.rect.left > 0:
                 dx -= speed
-            if keys[pygame.K_RIGHT] and self.rect.right < config.SCREEN_WIDTH:
+            if keys[pygame.K_RIGHT] and self.rect.right < config.WORLD_WIDTH:
                 dx += speed
             if keys[pygame.K_UP] and self.rect.top > 0:
                 dy -= speed
-            if keys[pygame.K_DOWN] and self.rect.bottom < config.SCREEN_HEIGHT:
+            if keys[pygame.K_DOWN] and self.rect.bottom < config.WORLD_HEIGHT:
                 dy += speed
 
             if keys[pygame.K_RSHIFT] and time.time() - self.last_skill_time > self.skill_cooldown:
@@ -217,8 +268,7 @@ class Player(pygame.sprite.Sprite):
 
             dash_key = keys[pygame.K_RCTRL]
 
-        self.center_x += dx
-        self.center_y += dy
+        self._try_move_axis(dx, dy)
 
         now = time.time()
         moving = (dx != 0 or dy != 0)
@@ -259,16 +309,15 @@ class Player(pygame.sprite.Sprite):
             dash_elapsed = now - self.dash_timer
             if dash_elapsed < self.dash_duration:
                 dash_speed = self.base_speed * self.dash_speed_multiplier
-                self.center_x += self.dash_dir[0] * dash_speed
-                self.center_y += self.dash_dir[1] * dash_speed
+                self._try_move_axis(self.dash_dir[0] * dash_speed, self.dash_dir[1] * dash_speed)
             else:
                 self.is_dashing = False
                 self.dash_invincible = False
 
-        # 대시로 화면 밖까지 튕겨 나가지 않도록 좌표를 화면 안으로 고정합니다.
+        # 대시로 맵 밖까지 튕겨 나가지 않도록 좌표를 월드 안으로 고정합니다.
         half_w, half_h = self.sprite_size[0] / 2, self.sprite_size[1] / 2
-        self.center_x = min(max(self.center_x, half_w), config.SCREEN_WIDTH - half_w)
-        self.center_y = min(max(self.center_y, half_h), config.SCREEN_HEIGHT - half_h)
+        self.center_x = min(max(self.center_x, half_w), config.WORLD_WIDTH - half_w)
+        self.center_y = min(max(self.center_y, half_h), config.WORLD_HEIGHT - half_h)
 
         if self.skill_active and time.time() > self.skill_timer:
             self.skill_active = False
@@ -318,3 +367,80 @@ class Player(pygame.sprite.Sprite):
 
             pygame.draw.rect(surface, (180, 0, 0), (bar_x, bar_y, bar_w, bar_h))
             pygame.draw.rect(surface, (255, 255, 0), (bar_x, bar_y, int(bar_w * pct), bar_h))
+
+    def draw_buff_indicator(self, surface, offset=(0, 0)):
+        """이동속도/무적 실드 아이템이 켜져 있는 동안 (1) 몸 주변에 은은하게
+        맥동하는 발광 오라와 (2) 머리 위에 떠 있는 작은 버프 뱃지(아이콘)를
+        그려서 지금 어떤 버프가 활성 상태인지 알 수 있게 합니다.
+        (회복 아이템은 지속 효과가 없으므로 여기서는 표시하지 않고,
+        먹는 순간의 피드백은 game_scene.py의 ItemPickupEffect로 따로 보여줍니다.)"""
+        now = time.time()
+        buffs = []
+        if now < self.item_speed_until:
+            buffs.append(("speed", config.CYAN))
+        if now < self.item_shield_until:
+            buffs.append(("shield", config.YELLOW))
+        if not buffs:
+            return
+
+        cx = self.rect.centerx - offset[0]
+        cy = self.rect.centery - offset[1]
+
+        # ----- 1) 몸 주변 발광 오라 (얇은 링 대신, 겹친 반투명 원으로 은은한
+        # 그라데이션 느낌을 내고 더하기 블렌드로 살짝 빛나 보이게 합니다) -----
+        pulse = math.sin(time.time() * 4) * 3
+        base_radius = max(self.rect.width, self.rect.height) // 2
+
+        for kind, color in buffs:
+            glow_size = int((base_radius + 18) * 2)
+            glow = pygame.Surface((glow_size, glow_size), pygame.SRCALPHA)
+            gc = glow_size // 2
+            for r_offset, alpha in ((14, 16), (9, 26), (4, 40)):
+                pygame.draw.circle(glow, (*color, alpha), (gc, gc), int(base_radius + r_offset + pulse))
+            surface.blit(
+                glow, glow.get_rect(center=(cx, cy)), special_flags=pygame.BLEND_RGBA_ADD
+            )
+
+        # ----- 2) 머리 위에 나란히 떠 있는 버프 뱃지(원형 배경 + 아이콘) -----
+        badge_size = round(22 * config.UI_SCALE)
+        gap = round(6 * config.UI_SCALE)
+        total_w = badge_size * len(buffs) + gap * (len(buffs) - 1)
+        bob = math.sin(time.time() * 3) * 2
+        badge_y = self.rect.top - offset[1] - badge_size - round(12 * config.UI_SCALE) + bob
+        start_x = cx - total_w // 2
+
+        for idx, (kind, color) in enumerate(buffs):
+            bx = start_x + idx * (badge_size + gap) + badge_size // 2
+            center = (int(bx), int(badge_y))
+            pygame.draw.circle(surface, (25, 25, 25), center, badge_size // 2 + 2)
+            pygame.draw.circle(surface, color, center, badge_size // 2)
+            self._draw_buff_glyph(surface, kind, center, badge_size)
+
+    @staticmethod
+    def _draw_buff_glyph(surface, kind, center, size):
+        """버프 뱃지 안에 그릴 간단한 아이콘. 번개(이동속도) / 방패(무적)."""
+        cx, cy = center
+
+        if kind == "speed":
+            pts = [
+                (cx - size * 0.04, cy - size * 0.32),
+                (cx + size * 0.20, cy - size * 0.02),
+                (cx + size * 0.02, cy - size * 0.02),
+                (cx + size * 0.14, cy + size * 0.32),
+                (cx - size * 0.16, cy + size * 0.02),
+                (cx - size * 0.02, cy + size * 0.02),
+            ]
+            pygame.draw.polygon(surface, (255, 255, 255), pts)
+
+        elif kind == "shield":
+            w, h = size * 0.30, size * 0.34
+            pts = [
+                (cx, cy - h),
+                (cx + w, cy - h * 0.45),
+                (cx + w, cy + h * 0.25),
+                (cx, cy + h),
+                (cx - w, cy + h * 0.25),
+                (cx - w, cy - h * 0.45),
+            ]
+            pygame.draw.polygon(surface, (255, 255, 255), pts)
+            pygame.draw.polygon(surface, (60, 40, 0), pts, max(1, round(size * 0.05)))

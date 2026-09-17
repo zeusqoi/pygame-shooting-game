@@ -56,6 +56,15 @@ FPS = 60
 
 UI_SCALE = SCREEN_WIDTH / DESIGN_WIDTH
 
+# ===================== 게임 월드(맵) 크기 =====================
+# 기존에는 "화면 = 전체 필드"였는데(카메라 스크롤 없음), 자유도 높은 맵을 위해
+# 실제 플레이 필드(WORLD)는 화면(SCREEN)보다 훨씬 넓게 잡고, 카메라가 플레이어를
+# 따라다니며 그중 화면 크기만큼만 보여주도록 바꿨습니다. 배율은 실제 화면
+# 픽셀(UI_SCALE 반영 이후) 기준이라 모니터 크기와 무관하게 항상 "화면의 2.2배" 느낌을 유지합니다.
+WORLD_SCALE = 2.2
+WORLD_WIDTH = round(SCREEN_WIDTH * WORLD_SCALE)
+WORLD_HEIGHT = round(SCREEN_HEIGHT * WORLD_SCALE)
+
 # 이미지 리소스 규칙 (현재는 임시 도형 사용하므로 경로 형식만 명시)
 IMG_PLAYER_1_IDLE = ""
 IMG_PLAYER_2_IDLE = ""
@@ -81,6 +90,11 @@ ZOMBIE_SPAWN_RATE = 1.0 # 스폰 빈도 조절용
 
 ITEM_DROP_RATE = 0.3
 ITEM_HEAL_AMOUNT = 20
+
+# 아이템별 효과 수치 (item1=회복, item2=이동속도, item3=무적 실드)
+ITEM_SPEED_MULT = 1.6       # 이동속도 아이템: 속도 배율
+ITEM_SPEED_DURATION = 6.0   # 이동속도 아이템: 지속 시간(초)
+ITEM_SHIELD_DURATION = 4.0  # 무적 실드 아이템: 지속 시간(초)
 
 # 색상 상수
 WHITE = (255, 255, 255)

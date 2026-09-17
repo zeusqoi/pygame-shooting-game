@@ -407,6 +407,9 @@
     },
     "colours": {
       "normal_text": "#888888"
+    },
+    "misc": {
+      "text_horiz_alignment": "left"
     }
   },
   "@tab_active": {

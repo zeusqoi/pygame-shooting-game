@@ -65,15 +65,21 @@ class CharacterSelectScene(Scene):
             container=self.mode_panel,
             object_id="#ranking_header_text"
         )
+        # 버튼 두 개를 왼쪽에 붙이지 않고, mode_panel(너비 1200) 안에서 가운데
+        # 오도록 시작 x좌표를 계산합니다.
+        _mode_btn_w = 400
+        _mode_btn_gap = 20
+        _mode_btns_total_w = _mode_btn_w * 2 + _mode_btn_gap
+        _mode_btn_x = (1200 - _mode_btns_total_w) // 2
         self.btn_1p = pygame_gui.elements.UIButton(
-            relative_rect=scaled_rect(20, 50, 400, 60),
+            relative_rect=scaled_rect(_mode_btn_x, 50, _mode_btn_w, 60),
             text="1 PLAYER",
             manager=self.ui_manager,
             container=self.mode_panel,
             object_id="@tab_active" if self.players == 1 else "@tab_inactive"
         )
         self.btn_2p = pygame_gui.elements.UIButton(
-            relative_rect=scaled_rect(440, 50, 400, 60),
+            relative_rect=scaled_rect(_mode_btn_x + _mode_btn_w + _mode_btn_gap, 50, _mode_btn_w, 60),
             text="2 PLAYERS",
             manager=self.ui_manager,
             container=self.mode_panel,

@@ -15,10 +15,13 @@ from models.zombie import Zombie
 from models.projectile import Projectile
 from models.ranged_projectile import RangedProjectile
 
-from models.effects import AttackEffect, HitEffect
+from models.effects import AttackEffect, HitEffect, ItemPickupEffect
 from models.item import Item
 from utils.sound_manager import play_sound, stop_channel, play_music
 from utils.layout import scaled_rect, scaled_pos, scaled_size
+from utils.camera import Camera
+from utils.level_layout import generate_obstacles
+from utils.flowfield import FlowField
 
 # 스테이지별 설정
 STAGE_CONFIG = {
@@ -70,14 +73,30 @@ class GameScene(Scene):
 
         self.ma_skill_channels = {}
 
-        p1 = Player(char_id=p1_char, is_p2=False)
+        # ===================== 넓은 맵: 장애물 / 카메라 / 경로탐색 =====================
+        # 화면(SCREEN)보다 넓은 월드(WORLD) 안에 장애물을 배치하고, 카메라가
+        # 플레이어를 따라다니며 그중 화면 크기만큼만 보여줍니다. 좀비는
+        # 플로우 필드로 이 장애물들을 피해서 플레이어에게 접근합니다.
+        self.obstacles = pygame.sprite.Group()
+        self.obstacles.add(*generate_obstacles(1))
+        self.camera = Camera()
+        self.flow_field = FlowField(list(self.obstacles))
+        self.flow_field_recompute_interval = 0.35
+        self._flow_field_timer = 0.0
+
+        p1 = Player(char_id=p1_char, is_p2=False, obstacles=self.obstacles)
         self.all_sprites.add(p1)
         self.players.append(p1)
 
         if players == 2:
-            p2 = Player(char_id=p2_char, is_p2=True)
+            p2 = Player(char_id=p2_char, is_p2=True, obstacles=self.obstacles)
             self.all_sprites.add(p2)
             self.players.append(p2)
+
+        # 카메라를 플레이어 위치로 한번 맞춰두고, 첫 플로우 필드도 미리
+        # 계산해둬서 첫 프레임부터 좀비가 정상적으로 경로를 찾도록 합니다.
+        self.camera.update(p1.rect)
+        self.flow_field.recompute([p.rect.center for p in self.players])
 
         self.stage = 1
         self.kills = 0
@@ -312,7 +331,19 @@ class GameScene(Scene):
 
             for item in list(self.items):
                 item.kill()
-                
+
+            # 스테이지가 바뀌면 장애물 배치도 새로 뽑고, 그에 맞춰 플로우
+            # 필드(경로탐색 격자)도 다시 만듭니다. 지금 플레이어들이 서 있는
+            # 자리도 보호 지점으로 넘겨서 새 장애물이 플레이어 위에 겹치지 않게 합니다.
+            protect_points = [(config.WORLD_WIDTH / 2, config.WORLD_HEIGHT / 2)]
+            protect_points += [p.rect.center for p in self.players]
+            self.obstacles.empty()
+            self.obstacles.add(*generate_obstacles(self.stage, protect_points=protect_points))
+            self.flow_field = FlowField(list(self.obstacles))
+            self._flow_field_timer = 0.0
+            if self.players:
+                self.flow_field.recompute([p.rect.center for p in self.players if p.hp > 0])
+
         else:
             self._stop_all_ma_skill_loops()
             self._reset_boss_warning()
@@ -402,7 +433,11 @@ class GameScene(Scene):
         if self.show_boss_warning:
             self.boss_warning_timer -= time_delta
             if self.boss_warning_timer <= 0:
-                z = Zombie(self.stage, self.players, zombie_type=self.pending_boss_type)
+                z = Zombie(
+                    self.stage, self.players, zombie_type=self.pending_boss_type,
+                    obstacles=self.obstacles, flow_field=self.flow_field,
+                    spawn_rect=self.camera.visible_world_rect()
+                )
                 self.all_sprites.add(z)
                 self.zombies.add(z)
                 self.boss_spawned = True
@@ -435,6 +470,22 @@ class GameScene(Scene):
         self.effects.update(time_delta)
         self.enemy_projectiles.update(time_delta)
 
+        # ===================== 카메라 & 플로우 필드 갱신 =====================
+        # 카메라는 살아있는 플레이어들의 중간 지점을 따라갑니다(1인 모드면
+        # 그냥 그 플레이어). 플로우 필드(좀비 경로탐색)는 매 프레임 다시 계산할
+        # 필요 없이 일정 간격으로만 갱신해도 충분히 자연스럽고, 좀비가 많아져도
+        # 가볍습니다.
+        alive_players = [p for p in self.players if p.hp > 0]
+        if alive_players:
+            avg_x = sum(p.rect.centerx for p in alive_players) / len(alive_players)
+            avg_y = sum(p.rect.centery for p in alive_players) / len(alive_players)
+            self.camera.update(pygame.Rect(int(avg_x), int(avg_y), 1, 1))
+
+            self._flow_field_timer -= time_delta
+            if self._flow_field_timer <= 0:
+                self._flow_field_timer = self.flow_field_recompute_interval
+                self.flow_field.recompute([p.rect.center for p in alive_players])
+
         now = time.time()
         spawn_interval = cfg["spawn_interval"] / max(self.stage * 0.5, 1)
 
@@ -456,7 +507,11 @@ class GameScene(Scene):
                             return
                     else:
                         play_sound("보스 나오기 전 효과음.mp3", volume=0.7)
-                        z = Zombie(self.stage, self.players, zombie_type=boss_type)
+                        z = Zombie(
+                            self.stage, self.players, zombie_type=boss_type,
+                            obstacles=self.obstacles, flow_field=self.flow_field,
+                            spawn_rect=self.camera.visible_world_rect()
+                        )
                         self.all_sprites.add(z)
                         self.zombies.add(z)
                         self.boss_spawned = True
@@ -466,7 +521,9 @@ class GameScene(Scene):
                     z = Zombie(
                         self.stage,
                         self.players,
-                        zombie_type=random.choice(normal_types)
+                        zombie_type=random.choice(normal_types),
+                        obstacles=self.obstacles, flow_field=self.flow_field,
+                        spawn_rect=self.camera.visible_world_rect()
                     )
                     self.all_sprites.add(z)
                     self.zombies.add(z)
@@ -475,7 +532,9 @@ class GameScene(Scene):
                 z = Zombie(
                     self.stage,
                     self.players,
-                    zombie_type=random.choice(available)
+                    zombie_type=random.choice(available),
+                    obstacles=self.obstacles, flow_field=self.flow_field,
+                    spawn_rect=self.camera.visible_world_rect()
                 )
                 self.all_sprites.add(z)
                 self.zombies.add(z)
@@ -656,7 +715,20 @@ class GameScene(Scene):
             eaten_items = pygame.sprite.spritecollide(p, self.items, True)
 
             for item in eaten_items:
-                p.hp = min(p.max_hp, p.hp + config.ITEM_HEAL_AMOUNT)
+                # 아이템 종류(item.item_type)에 따라 서로 다른 효과를 적용합니다.
+                # 지속 버프가 없는 회복 아이템도 포함해서, 세 종류 전부
+                # 먹는 순간 ItemPickupEffect로 "뭘 먹었는지" 바로 보여줍니다.
+                if item.item_type == "speed":
+                    p.apply_speed_item(config.ITEM_SPEED_DURATION, config.ITEM_SPEED_MULT)
+                    self.effects.add(ItemPickupEffect(item.rect.center, "SPEED UP!", config.CYAN))
+                elif item.item_type == "shield":
+                    p.apply_shield_item(config.ITEM_SHIELD_DURATION)
+                    self.effects.add(ItemPickupEffect(item.rect.center, "SHIELD!", config.YELLOW))
+                else:  # "heal" (기본값)
+                    p.hp = min(p.max_hp, p.hp + config.ITEM_HEAL_AMOUNT)
+                    self.effects.add(
+                        ItemPickupEffect(item.rect.center, f"+{config.ITEM_HEAL_AMOUNT} HP", config.GREEN)
+                    )
                 play_sound("아이템 먹는 효과음.mp3", volume=0.5)
 
         for p in list(self.players):
@@ -798,11 +870,22 @@ class GameScene(Scene):
             colors = {1: (50, 100, 50), 2: (50, 50, 80), 3: (80, 40, 40), 4: (40, 0, 60)}
             temp_surf.fill(colors.get(self.stage, (30, 30, 30)))
 
-        self.all_sprites.draw(temp_surf)
-        self.effects.draw(temp_surf)
-        self.enemy_projectiles.draw(temp_surf)
+        # 맵이 화면보다 넓으므로, 스프라이트를 그대로 rect 위치에 그리는 대신
+        # 카메라 오프셋만큼 빼서 "지금 보이는 부분"만 화면 좌표로 그립니다.
+        cam_offset = self.camera.offset()
+
+        for obs in self.obstacles:
+            temp_surf.blit(obs.image, self.camera.apply(obs.rect))
+        for spr in self.all_sprites:
+            temp_surf.blit(spr.image, self.camera.apply(spr.rect))
+        for eff in self.effects:
+            temp_surf.blit(eff.image, self.camera.apply(eff.rect))
+        for proj in self.enemy_projectiles:
+            temp_surf.blit(proj.image, self.camera.apply(proj.rect))
         for z in self.zombies:
-            z.draw_hp(temp_surf)
+            z.draw_hp(temp_surf, offset=cam_offset)
+        for p in self.players:
+            p.draw_buff_indicator(temp_surf, offset=cam_offset)
 
         # 3. 흔들림 적용
         screen.fill((0, 0, 0))

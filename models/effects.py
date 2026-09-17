@@ -1,6 +1,7 @@
 # effects.py
 
 import pygame
+import config
 
 
 class AttackEffect(pygame.sprite.Sprite):
@@ -46,6 +47,43 @@ class AttackEffect(pygame.sprite.Sprite):
         old_center = self.rect.center
         self.image = self._render_frame(progress)
         self.rect = self.image.get_rect(center=old_center)
+
+
+class ItemPickupEffect(pygame.sprite.Sprite):
+    """아이템을 먹는 순간 위로 떠오르며 사라지는 문구 이펙트.
+    회복/이동속도/무적 아이템 전부 이걸로 "방금 뭘 먹었는지"가 바로 보이게
+    합니다(지속 버프가 없는 회복 아이템도 여기서는 똑같이 피드백을 줍니다)."""
+
+    def __init__(self, center, text, color):
+        super().__init__()
+        self.start_center = center
+        self.text = text
+        self.color = color
+
+        self.timer = 0.0
+        self.lifetime = 0.9
+
+        self.image = self._render_frame(0.0)
+        self.rect = self.image.get_rect(center=center)
+
+    def _render_frame(self, progress):
+        alpha = max(0, int(255 * (1.0 - progress) ** 1.3))
+        surf = config.kfont_small.render(self.text, True, self.color).convert_alpha()
+        surf.set_alpha(alpha)
+        return surf
+
+    def update(self, time_delta):
+        self.timer += time_delta
+        if self.timer >= self.lifetime:
+            self.kill()
+            return
+
+        progress = self.timer / self.lifetime
+        rise = -34 * progress  # 서서히 위로 떠오르며 사라짐
+        self.image = self._render_frame(progress)
+        self.rect = self.image.get_rect(
+            center=(self.start_center[0], self.start_center[1] + rise)
+        )
 
 
 class HitEffect(pygame.sprite.Sprite):

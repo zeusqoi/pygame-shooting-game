@@ -61,5 +61,9 @@ class Projectile(pygame.sprite.Sprite):
         self.rect.x = int(self.pos_x)
         self.rect.y = int(self.pos_y)
         
-        if self.rect.right < 0 or self.rect.left > config.SCREEN_WIDTH or self.rect.bottom < 0 or self.rect.top > config.SCREEN_HEIGHT:
+        # 맵이 화면보다 넓어졌으므로, 화면 밖으로 나갔다고 바로 없애면 카메라
+        # 바깥(아직 월드 안)에서 날아가는 투사체가 너무 일찍 사라집니다.
+        # 월드 경계를 기준으로 판정합니다.
+        if (self.rect.right < 0 or self.rect.left > config.WORLD_WIDTH
+                or self.rect.bottom < 0 or self.rect.top > config.WORLD_HEIGHT):
             self.kill()
